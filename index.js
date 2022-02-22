@@ -1,3 +1,4 @@
+/* Game variables */
 let buttonColors = ["red", "blue", "green", "yellow"];
 let sounds = {
   "red": new Audio("sounds/red.mp3"),
@@ -8,6 +9,8 @@ let sounds = {
 }
 let gamePattern = [];
 let userPattern = [];
+let gameStarted = false;
+let level = 0;
 
 // Display a 'flash' animation to user and play the sound
 let flashButton = (color) => {
@@ -39,6 +42,8 @@ $(".btn").click(function() {
 
   animateUserPress(userChosenColor);
   playSound(userChosenColor);
+
+  checkAnswer(userPattern.length - 1);
 })
 
 // Generates a random number between 0 and 3, to be used to index buttonColors
@@ -46,11 +51,55 @@ let nextSequence = () => {
   let num = Math.floor(Math.random() * 4);
   let chosenColor = buttonColors[num];
   gamePattern.push(chosenColor);
-
   animateButton(chosenColor);
+
+  // Game logic
+  level++;
+  updateTitle();
+  userPattern = [];
+}
+
+let updateTitle = () => {
+  $("h1").text("Level " + level);
+}
+
+let checkAnswer = (index) => {
+  if (userPattern[index] == gamePattern[index]) {
+    handleCorrectPress();
+  } else {
+    handleGameOver();
+  }
+}
+
+/* Check answer helper functions */
+let handleCorrectPress = () => {
+  if (userPattern.length == gamePattern.length) {
+    setTimeout(() => {
+      nextSequence();
+    }, 1000);
+  }
+}
+
+let handleGameOver = () => {
+  $("h1").text("Game Over, Press Any Key to Restart");
+  resetGame();
+  $("body").addClass("game-over");
+  setTimeout(() => {
+    $("body").removeClass("game-over");
+  }, 250);
+}
+
+let resetGame = () => {
+  level = 0;
+  userPattern = [];
+  gamePattern = [];
+  gameStarted = false;
 }
 
 // Listen for user key press to start the game
 $(document).on("keydown", () => {
-  nextSequence();
+  if (!gameStarted) {
+    nextSequence();
+    gameStarted = true;
+  }
 });
